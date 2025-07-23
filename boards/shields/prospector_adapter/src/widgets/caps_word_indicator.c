@@ -1,8 +1,8 @@
 #include "caps_word_indicator.h"
 
 #include <zmk/display.h>
-#include <zmk/events/caps_word_state_changed.h>
 #include <zmk/event_manager.h>
+#include <zmk/events/caps_word_state_changed.h>
 
 #include <fonts.h>
 #include <sf_symbols.h>

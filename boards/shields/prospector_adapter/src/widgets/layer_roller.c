@@ -46,8 +46,7 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_layer_roller, struct layer_roller_state, laye
                             layer_roller_get_state)
 ZMK_SUBSCRIPTION(widget_layer_roller, zmk_layer_state_changed);
 
-static void mask_event_cb(lv_event_t * e)
-{
+static void mask_event_cb(lv_event_t * e) {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * obj = lv_event_get_target(e);
 
@@ -84,8 +83,7 @@ static void mask_event_cb(lv_event_t * e)
         lv_draw_mask_fade_init(fade_mask_bottom, &rect_area, LV_OPA_COVER, rect_area.y1, LV_OPA_TRANSP, rect_area.y2);
         mask_bottom_id = lv_draw_mask_add(fade_mask_bottom, NULL);
 
-    }
-    else if(code == LV_EVENT_DRAW_POST_END) {
+    } else if(code == LV_EVENT_DRAW_POST_END) {
         lv_draw_mask_fade_param_t * fade_mask_top = lv_draw_mask_remove_id(mask_top_id);
         lv_draw_mask_fade_param_t * fade_mask_bottom = lv_draw_mask_remove_id(mask_bottom_id);
         lv_draw_mask_free_param(fade_mask_top);

@@ -8,7 +8,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(als, 4);
 
-static const struct device *pwm_leds_dev = DEVICE_DT_GET_ONE(pwm_leds);
+static const struct device* pwm_leds_dev = DEVICE_DT_GET_ONE(pwm_leds);
 #define DISP_BL DT_NODE_CHILD_IDX(DT_NODELABEL(disp_bl))
 
 #ifdef CONFIG_PROSPECTOR_USE_AMBIENT_LIGHT_SENSOR
@@ -45,8 +45,8 @@ uint8_t map_light_to_pwm(int32_t sensor_reading) {
     // Linear mapping
     uint8_t pwm_value = (uint8_t)(
         PWM_MIN + ((PWM_MAX - PWM_MIN) *
-        (sensor_reading - SENSOR_MIN)) / (SENSOR_MAX - SENSOR_MIN)
-    );
+                   (sensor_reading - SENSOR_MIN)) / (SENSOR_MAX - SENSOR_MIN)
+        );
 
     return pwm_value;
 }
@@ -76,12 +76,12 @@ uint8_t bl_fade(uint8_t source, uint8_t target) {
     return 0;
 }
 
-extern void als_thread(void *d0, void *d1, void *d2) {
+extern void als_thread(void* d0, void* d1, void* d2) {
     ARG_UNUSED(d0);
     ARG_UNUSED(d1);
     ARG_UNUSED(d2);
 
-    const struct device *dev;
+    const struct device* dev;
     struct sensor_value intensity;
     uint8_t mapped_brightness;
 
