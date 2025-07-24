@@ -6,7 +6,7 @@
 struct zmk_widget_modifiers {
     sys_snode_t node;
     lv_obj_t* obj;
-    lv_obj_t* label;
+    lv_obj_t* shift_label;
     lv_obj_t* ctrl_label;
     lv_obj_t* opt_label;
     lv_obj_t* cmd_label;
