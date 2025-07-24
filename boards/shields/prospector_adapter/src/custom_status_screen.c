@@ -33,8 +33,13 @@ lv_obj_t* zmk_display_status_screen() {
     lv_obj_set_style_bg_opa(screen, 255, LV_PART_MAIN);
 
 #ifdef CONFIG_DT_HAS_ZMK_BEHAVIOR_CAPS_WORD_ENABLED
+#ifdef CONFIG_PROSPECTOR_MODIFIERS_WIDGET
     zmk_widget_caps_word_indicator_init(&caps_word_indicator_widget, screen);
     lv_obj_align(zmk_widget_caps_word_indicator_obj(&caps_word_indicator_widget), LV_ALIGN_BOTTOM_RIGHT, -5, -48);
+#else
+    zmk_widget_caps_word_indicator_init(&caps_word_indicator_widget, screen);
+    lv_obj_align(zmk_widget_caps_word_indicator_obj(&caps_word_indicator_widget), LV_ALIGN_RIGHT_MID, -10, 46);
+#endif
 #endif
 
     zmk_widget_battery_bar_init(&battery_bar_widget, screen);

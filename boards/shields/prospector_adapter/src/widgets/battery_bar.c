@@ -188,6 +188,8 @@ int zmk_widget_battery_bar_init(struct zmk_widget_battery_bar* widget, lv_obj_t*
 
     widget_battery_bar_battery_init();
     widget_battery_bar_connection_init();
+    battery_bar_battery_update_cb(battery_bar_get_battery_state(NULL));
+    battery_bar_connection_update_cb(battery_bar_get_connection_state(NULL));
 
     return 0;
 }
