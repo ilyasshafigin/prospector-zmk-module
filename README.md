@@ -8,6 +8,7 @@ All the necessary stuff for [Prospector](https://github.com/carrefinho/prospecto
 - Peripheral battery bar
 - Peripheral connection status
 - Caps word indicator
+- Modifier status indicator (shows active Ctrl, Shift, Alt, GUI keys)
 
 ## Installation
 
@@ -63,18 +64,25 @@ keymap {
 }
 ```
 
-## Configuration
+### Modifier Status Widget
 
-To customize, add config options to your `config/[YOUR KEYBOARD SHIELD].conf` like so:
-```ini
-CONFIG_PROSPECTOR_USE_AMBIENT_LIGHT_SENSOR=n
-CONFIG_PROSPECTOR_FIXED_BRIGHTNESS=80
-```
+The modifier status widget displays minimalist symbols for active modifier keys:
 
-### Available config options:
-| Name                                              | Description                                                               | Default      |
-| ------------------------------------------------- | --------------------------------------------------------------------------| ------------ |
-| `CONFIG_PROSPECTOR_USE_AMBIENT_LIGHT_SENSOR`      | Use ambient light sensor for auto brightness, set to `n` if building without one                              | y            |
-| `CONFIG_PROSPECTOR_FIXED_BRIGHTESS`               | Set fixed display brightess when not using ambient light sensor           | 50 (1-100)   |
-| `CONFIG_PROSPECTOR_PROSPECTOR_ROTATE_DISPLAY_180` | Rotate the display 180 degrees                                            | n            |
-| `CONFIG_PROSPECTOR_LAYER_ROLLER_ALL_CAPS`         | Convert layer names to all caps                                           | n            |
+- **⌃** for Control (Ctrl)
+- **⇧** for Shift  
+- **⌥** for Alt/Option
+- **⌘** for GUI/Windows/Cmd key
+
+The widget appears in the top-right corner of the display and updates in real-time as you press and release modifier keys.
+
+## Configuration Options
+
+The following configuration options are available in your `config/*.conf` files:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `CONFIG_PROSPECTOR_LAYER_ROLLER_ALL_CAPS` | Convert layer names to all caps | n |
+| `CONFIG_PROSPECTOR_ROTATE_DISPLAY_180` | Rotate the display 180 degrees | n |
+| `CONFIG_PROSPECTOR_MODIFIERS_WIDGET` | Enable modifier status widget | y |
+| `CONFIG_PROSPECTOR_USE_AMBIENT_LIGHT_SENSOR` | Use ambient light sensor for auto brightness | y |
+| `CONFIG_PROSPECTOR_FIXED_BRIGHTNESS` | Fixed display brightness (1-100) | 50 |

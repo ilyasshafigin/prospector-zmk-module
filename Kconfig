@@ -6,6 +6,12 @@ config PROSPECTOR_ROTATE_DISPLAY_180
     bool "Rotate the display 180 degrees"
     default n
 
+config PROSPECTOR_MODIFIER_STATUS_WIDGET
+    bool "Enable modifier status widget"
+    default y
+    help
+      Show visual indicators for active modifier keys (Ctrl, Shift, Alt, GUI)
+
 config PROSPECTOR_USE_AMBIENT_LIGHT_SENSOR
     bool "Use ambient light sensor for auto brightness"
     default y

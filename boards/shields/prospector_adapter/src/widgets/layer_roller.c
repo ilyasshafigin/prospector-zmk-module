@@ -11,7 +11,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
-static char layer_names_buffer[256] = {0}; // Buffer for concatenated layer names
+static char layer_names_buffer[256] = { 0 }; // Buffer for concatenated layer names
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
@@ -21,45 +21,61 @@ struct layer_roller_state {
     uint8_t index;
 };
 
-static void layer_roller_set_sel(lv_obj_t *roller, struct layer_roller_state state) {
+static void layer_roller_set_sel(lv_obj_t* roller, struct layer_roller_state state) {
     if (initialized) {
         lv_roller_set_selected(roller, state.index, LV_ANIM_ON);
     }
 }
 
 static void layer_roller_update_cb(struct layer_roller_state state) {
-    struct zmk_widget_layer_roller *widget;
+    struct zmk_widget_layer_roller* widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
         layer_roller_set_sel(widget->obj, state);
     }
 }
 
-static struct layer_roller_state layer_roller_get_state(const zmk_event_t *eh) {
+static struct layer_roller_state layer_roller_get_state(const zmk_event_t* eh) {
     uint8_t index = zmk_keymap_highest_layer_active();
     LOG_INF("Roller set to: %d", index);
-    return (struct layer_roller_state){
+    return (struct layer_roller_state) {
         .index = index,
     };
 }
 
 ZMK_DISPLAY_WIDGET_LISTENER(widget_layer_roller, struct layer_roller_state, layer_roller_update_cb,
-                            layer_roller_get_state)
+                            layer_roller_get_state);
 ZMK_SUBSCRIPTION(widget_layer_roller, zmk_layer_state_changed);
 
-static void mask_event_cb(lv_event_t * e) {
+static void mask_event_cb(lv_event_t* e) {
     lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_target(e);
+    lv_obj_t* obj = lv_event_get_target(e);
 
     static int16_t mask_top_id = -1;
     static int16_t mask_bottom_id = -1;
 
-    if(code == LV_EVENT_COVER_CHECK) {
+    if (code == LV_EVENT_COVER_CHECK) {
         lv_event_set_cover_res(e, LV_COVER_RES_MASKED);
+    } else if (code == LV_EVENT_DRAW_MAIN_BEGIN) {
+        /* Clean up any existing masks first */
+        if (mask_top_id != -1) {
+            lv_draw_mask_fade_param_t* old_mask = lv_draw_mask_remove_id(mask_top_id);
+            if (old_mask) {
+                lv_draw_mask_free_param(old_mask);
+                lv_mem_buf_release(old_mask);
+            }
+            mask_top_id = -1;
+        }
+        if (mask_bottom_id != -1) {
+            lv_draw_mask_fade_param_t* old_mask = lv_draw_mask_remove_id(mask_bottom_id);
+            if (old_mask) {
+                lv_draw_mask_free_param(old_mask);
+                lv_mem_buf_release(old_mask);
+            }
+            mask_bottom_id = -1;
+        }
 
-    }
-    else if(code == LV_EVENT_DRAW_MAIN_BEGIN) {
         /* add mask */
-        const lv_font_t * font = lv_obj_get_style_text_font(obj, LV_PART_MAIN);
+        const lv_font_t* font = lv_obj_get_style_text_font(obj, LV_PART_MAIN);
         lv_coord_t line_space = lv_obj_get_style_text_line_space(obj, LV_PART_MAIN);
         lv_coord_t font_h = lv_font_get_line_height(font);
 
@@ -72,61 +88,85 @@ static void mask_event_cb(lv_event_t * e) {
         rect_area.y1 = roller_coords.y1;
         rect_area.y2 = roller_coords.y1 + (lv_obj_get_height(obj) - font_h - line_space) / 2;
 
-        lv_draw_mask_fade_param_t * fade_mask_top = lv_mem_buf_get(sizeof(lv_draw_mask_fade_param_t));
-        lv_draw_mask_fade_init(fade_mask_top, &rect_area, LV_OPA_TRANSP, rect_area.y1, LV_OPA_COVER, rect_area.y2);
-        mask_top_id = lv_draw_mask_add(fade_mask_top, NULL);
+        lv_draw_mask_fade_param_t* fade_mask_top = lv_mem_buf_get(sizeof(lv_draw_mask_fade_param_t));
+        if (fade_mask_top) {
+            lv_draw_mask_fade_init(fade_mask_top, &rect_area, LV_OPA_TRANSP, rect_area.y1, LV_OPA_COVER, rect_area.y2);
+            mask_top_id = lv_draw_mask_add(fade_mask_top, NULL);
+        }
 
         rect_area.y1 = rect_area.y2 + font_h + line_space - 1;
         rect_area.y2 = roller_coords.y2;
 
-        lv_draw_mask_fade_param_t * fade_mask_bottom = lv_mem_buf_get(sizeof(lv_draw_mask_fade_param_t));
-        lv_draw_mask_fade_init(fade_mask_bottom, &rect_area, LV_OPA_COVER, rect_area.y1, LV_OPA_TRANSP, rect_area.y2);
-        mask_bottom_id = lv_draw_mask_add(fade_mask_bottom, NULL);
-
-    } else if(code == LV_EVENT_DRAW_POST_END) {
-        lv_draw_mask_fade_param_t * fade_mask_top = lv_draw_mask_remove_id(mask_top_id);
-        lv_draw_mask_fade_param_t * fade_mask_bottom = lv_draw_mask_remove_id(mask_bottom_id);
-        lv_draw_mask_free_param(fade_mask_top);
-        lv_draw_mask_free_param(fade_mask_bottom);
-        lv_mem_buf_release(fade_mask_top);
-        lv_mem_buf_release(fade_mask_bottom);
-        mask_top_id = -1;
-        mask_bottom_id = -1;
+        lv_draw_mask_fade_param_t* fade_mask_bottom = lv_mem_buf_get(sizeof(lv_draw_mask_fade_param_t));
+        if (fade_mask_bottom) {
+            lv_draw_mask_fade_init(fade_mask_bottom, &rect_area, LV_OPA_COVER, rect_area.y1, LV_OPA_TRANSP, rect_area.y2);
+            mask_bottom_id = lv_draw_mask_add(fade_mask_bottom, NULL);
+        }
+    } else if (code == LV_EVENT_DRAW_POST_END) {
+        if (mask_top_id != -1) {
+            lv_draw_mask_fade_param_t* fade_mask_top = lv_draw_mask_remove_id(mask_top_id);
+            if (fade_mask_top) {
+                lv_draw_mask_free_param(fade_mask_top);
+                lv_mem_buf_release(fade_mask_top);
+            }
+            mask_top_id = -1;
+        }
+        if (mask_bottom_id != -1) {
+            lv_draw_mask_fade_param_t* fade_mask_bottom = lv_draw_mask_remove_id(mask_bottom_id);
+            if (fade_mask_bottom) {
+                lv_draw_mask_free_param(fade_mask_bottom);
+                lv_mem_buf_release(fade_mask_bottom);
+            }
+            mask_bottom_id = -1;
+        }
     }
 }
 
-int zmk_widget_layer_roller_init(struct zmk_widget_layer_roller *widget, lv_obj_t *parent) {
+int zmk_widget_layer_roller_init(struct zmk_widget_layer_roller* widget, lv_obj_t* parent) {
     widget->obj = lv_roller_create(parent);
 
     layer_names_buffer[0] = '\0';
-    char *ptr = layer_names_buffer;
+    char* ptr = layer_names_buffer;
+    size_t remaining_space = sizeof(layer_names_buffer) - 1; // Leave space for null terminator
 
     for (int i = 0; i < ZMK_KEYMAP_LAYERS_LEN; i++) {
-        const char *layer_name = zmk_keymap_layer_name(zmk_keymap_layer_index_to_id(i));
+        const char* layer_name = zmk_keymap_layer_name(zmk_keymap_layer_index_to_id(i));
         if (layer_name) {
             if (i > 0) {
+                if (remaining_space < 1) break; // No space for newline
                 strcat(ptr, "\n");
-                ptr += strlen(ptr);
+                ptr += 1;
+                remaining_space -= 1;
             }
 
             if (layer_name && *layer_name) {
-#if IS_ENABLED(CONFIG_LAYER_ROLLER_ALL_CAPS)
-                while (*layer_name) {
+                size_t name_len = strlen(layer_name);
+                if (remaining_space < name_len) break; // No space for layer name
+
+#if IS_ENABLED(CONFIG_PROSPECTOR_LAYER_ROLLER_ALL_CAPS)
+                while (*layer_name && remaining_space > 0) {
                     *ptr = toupper((unsigned char)*layer_name);
                     ptr++;
                     layer_name++;
+                    remaining_space--;
                 }
                 *ptr = '\0';
 #else
-                strcat(ptr, layer_name);
-                ptr += strlen(layer_name);
+                strncat(ptr, layer_name, remaining_space);
+                ptr += name_len;
+                remaining_space -= name_len;
 #endif
             } else {
                 // Just use the number for unnamed layers
                 char index_str[12];
-                snprintf(index_str, sizeof(index_str), "%d", i);
-                strcat(ptr, index_str);
-                ptr += strlen(index_str);
+                int ret = snprintf(index_str, sizeof(index_str), "%d", i);
+                if (ret > 0 && (size_t)ret <= remaining_space) {
+                    strcat(ptr, index_str);
+                    ptr += ret;
+                    remaining_space -= ret;
+                } else {
+                    break; // No space for index
+                }
             }
         }
     }
@@ -188,6 +228,6 @@ int zmk_widget_layer_roller_init(struct zmk_widget_layer_roller *widget, lv_obj_
     return 0;
 }
 
-lv_obj_t *zmk_widget_layer_roller_obj(struct zmk_widget_layer_roller *widget) {
+lv_obj_t* zmk_widget_layer_roller_obj(struct zmk_widget_layer_roller* widget) {
     return widget->obj;
 }

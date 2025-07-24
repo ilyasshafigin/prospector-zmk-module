@@ -61,13 +61,19 @@ uint8_t bl_fade(uint8_t source, uint8_t target) {
             LOG_ERR("Failed to set brightness");
         }
 
-        current_brightness += increasing ? FADE_STEP : -FADE_STEP;
-
-        // Ensure we don't overshoot bounds
-        if (current_brightness > 100) {
-            current_brightness = 100;
-        } else if (current_brightness < 0) {
-            current_brightness = 0;
+        if (increasing) {
+            current_brightness += FADE_STEP;
+            // Ensure we don't overshoot the upper bound
+            if (current_brightness > 100) {
+                current_brightness = 100;
+            }
+        } else {
+            // Prevent underflow when decrementing
+            if (current_brightness >= FADE_STEP) {
+                current_brightness -= FADE_STEP;
+            } else {
+                current_brightness = 0;
+            }
         }
 
         k_msleep(increasing ? FADE_SLEEP_BRIGHTEN_MS : FADE_SLEEP_DARKEN_MS);
@@ -87,7 +93,8 @@ extern void als_thread(void* d0, void* d1, void* d2) {
 
     dev = DEVICE_DT_GET_ONE(avago_apds9960);
     if (!device_is_ready(dev)) {
-        printk("sensor: device not ready.\n");
+        LOG_ERR("Sensor device not ready");
+        return;
     }
 
     // led_set_brightness(pwm_leds_dev, DISP_BL, 100);
@@ -99,10 +106,12 @@ extern void als_thread(void* d0, void* d1, void* d2) {
 
         if (sensor_sample_fetch(dev)) {
             LOG_ERR("sensor_sample fetch failed\n");
+            continue; // Skip this iteration on error
         }
 
         if (sensor_channel_get(dev, SENSOR_CHAN_LIGHT, &intensity)) {
             LOG_ERR("Cannot read ALS data.\n");
+            continue; // Skip this iteration on error
         }
 
         // LOG_INF("ambient light intensity %d", intensity.val1);
@@ -118,9 +127,11 @@ extern void als_thread(void* d0, void* d1, void* d2) {
 
                 if (sensor_sample_fetch(dev)) {
                     LOG_ERR("sensor_sample fetch failed\n");
+                    continue; // Skip this iteration on error
                 }
                 if (sensor_channel_get(dev, SENSOR_CHAN_LIGHT, &intensity)) {
                     LOG_ERR("Cannot read ALS data.\n");
+                    continue; // Skip this iteration on error
                 }
 
                 mapped_brightness = map_light_to_pwm(intensity.val1);
