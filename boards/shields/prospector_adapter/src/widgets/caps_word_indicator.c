@@ -10,6 +10,9 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
+#define INDICATOR_ACTIVE_COLOR lv_color_hex(0x00ffe5)
+#define INDICATOR_INACTIVE_COLOR lv_color_hex(0x101010)
+
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
 static bool initialized = false;
@@ -21,9 +24,9 @@ struct caps_word_indicator_state {
 static void caps_word_indicator_set_active(lv_obj_t* label, struct caps_word_indicator_state state) {
     if (initialized) {
         if (state.active) {
-            lv_obj_set_style_text_color(label, lv_color_hex(0x00ffe5), LV_PART_MAIN);
+            lv_obj_set_style_text_color(label, INDICATOR_ACTIVE_COLOR, LV_PART_MAIN);
         } else {
-            lv_obj_set_style_text_color(label, lv_color_hex(0x202020), LV_PART_MAIN);
+            lv_obj_set_style_text_color(label, INDICATOR_INACTIVE_COLOR, LV_PART_MAIN);
         }
     }
 }

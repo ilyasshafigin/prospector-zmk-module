@@ -13,7 +13,7 @@
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #define MODIFIER_ACTIVE_COLOR lv_color_hex(0x80e0a7)
-#define MODIFIER_INACTIVE_COLOR lv_color_hex(0x202020)
+#define MODIFIER_INACTIVE_COLOR lv_color_hex(0x101010)
 
 static bool initialized = false;
 
