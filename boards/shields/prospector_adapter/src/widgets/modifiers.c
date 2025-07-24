@@ -13,9 +13,7 @@
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #define MODIFIER_ACTIVE_COLOR lv_color_hex(0x80e0a7)
-#define MODIFIER_INACTIVE_COLOR lv_color_hex(0x101010)
-
-static bool initialized = false;
+#define MODIFIER_INACTIVE_COLOR lv_color_hex(0x040404)
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
@@ -23,12 +21,7 @@ struct modifiers_state {
     zmk_mod_flags_t current_mods;
 };
 
-static void modifiers_update_visuals(struct zmk_widget_modifiers* widget,
-                                     struct modifiers_state state) {
-    if (!initialized) {
-        return;
-    }
-
+static void modifiers_update_visuals(struct zmk_widget_modifiers* widget, struct modifiers_state state) {
     zmk_mod_flags_t mods = state.current_mods;
 
     if (mods & (MOD_LSFT | MOD_RSFT)) {
@@ -106,8 +99,6 @@ int zmk_widget_modifiers_init(struct zmk_widget_modifiers* widget, lv_obj_t* par
 
     widget_modifiers_init();
     modifiers_update_cb(modifiers_get_state(NULL));
-
-    initialized = true;
 
     return 0;
 }

@@ -11,23 +11,19 @@
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #define INDICATOR_ACTIVE_COLOR lv_color_hex(0x00ffe5)
-#define INDICATOR_INACTIVE_COLOR lv_color_hex(0x101010)
+#define INDICATOR_INACTIVE_COLOR lv_color_hex(0x040404)
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
-
-static bool initialized = false;
 
 struct caps_word_indicator_state {
     bool active;
 };
 
 static void caps_word_indicator_set_active(lv_obj_t* label, struct caps_word_indicator_state state) {
-    if (initialized) {
-        if (state.active) {
-            lv_obj_set_style_text_color(label, INDICATOR_ACTIVE_COLOR, LV_PART_MAIN);
-        } else {
-            lv_obj_set_style_text_color(label, INDICATOR_INACTIVE_COLOR, LV_PART_MAIN);
-        }
+    if (state.active) {
+        lv_obj_set_style_text_color(label, INDICATOR_ACTIVE_COLOR, LV_PART_MAIN);
+    } else {
+        lv_obj_set_style_text_color(label, INDICATOR_INACTIVE_COLOR, LV_PART_MAIN);
     }
 }
 
@@ -39,8 +35,7 @@ static void caps_word_indicator_update_cb(struct caps_word_indicator_state state
 }
 
 static struct caps_word_indicator_state caps_word_indicator_get_state(const zmk_event_t* eh) {
-    const struct zmk_caps_word_state_changed* ev =
-        as_zmk_caps_word_state_changed(eh);
+    const struct zmk_caps_word_state_changed* ev = as_zmk_caps_word_state_changed(eh);
     LOG_INF("DISP | Caps Word State Changed: %d", ev->active);
     return (struct caps_word_indicator_state) {
         .active = ev->active,
@@ -48,11 +43,10 @@ static struct caps_word_indicator_state caps_word_indicator_get_state(const zmk_
 }
 
 ZMK_DISPLAY_WIDGET_LISTENER(widget_caps_word_indicator, struct caps_word_indicator_state,
-                            caps_word_indicator_update_cb, caps_word_indicator_get_state)
-    ZMK_SUBSCRIPTION(widget_caps_word_indicator, zmk_caps_word_state_changed);
+                            caps_word_indicator_update_cb, caps_word_indicator_get_state);
+ZMK_SUBSCRIPTION(widget_caps_word_indicator, zmk_caps_word_state_changed);
 
-int zmk_widget_caps_word_indicator_init(struct zmk_widget_caps_word_indicator* widget,
-                                        lv_obj_t* parent) {
+int zmk_widget_caps_word_indicator_init(struct zmk_widget_caps_word_indicator* widget, lv_obj_t* parent) {
     widget->obj = lv_label_create(parent);
 
     // LV_FONT_DECLARE(SF_Compact_Text_Bold_32);
@@ -65,8 +59,7 @@ int zmk_widget_caps_word_indicator_init(struct zmk_widget_caps_word_indicator* w
     sys_slist_append(&widgets, &widget->node);
 
     widget_caps_word_indicator_init();
-
-    initialized = true;
+    caps_word_indicator_update_cb(caps_word_indicator_get_state(NULL));
 
     return 0;
 }

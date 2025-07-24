@@ -14,8 +14,6 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
-bool initialized = false;
-
 // Simplified state structures for each event type
 struct battery_update_state {
     uint8_t source;
@@ -28,50 +26,46 @@ struct connection_update_state {
 };
 
 static void set_battery_bar_value(lv_obj_t* widget, struct battery_update_state state) {
-    if (initialized) {
-        lv_obj_t* info_container = lv_obj_get_child(widget, state.source);
-        lv_obj_t* bar = lv_obj_get_child(info_container, 0);
-        lv_obj_t* num = lv_obj_get_child(info_container, 1);
+    lv_obj_t* info_container = lv_obj_get_child(widget, state.source);
+    lv_obj_t* bar = lv_obj_get_child(info_container, 0);
+    lv_obj_t* num = lv_obj_get_child(info_container, 1);
 
-        lv_bar_set_value(bar, state.level, LV_ANIM_ON);
-        lv_label_set_text_fmt(num, "%d", state.level);
+    lv_bar_set_value(bar, state.level, LV_ANIM_ON);
+    lv_label_set_text_fmt(num, "%d", state.level);
 
-        if (state.level < 20) {
-            lv_obj_set_style_bg_color(bar, lv_color_hex(0xD3900F), LV_PART_INDICATOR);
-            lv_obj_set_style_bg_grad_color(bar, lv_color_hex(0xE8AC11), LV_PART_INDICATOR);
-            lv_obj_set_style_bg_color(bar, lv_color_hex(0x6E4E07), LV_PART_MAIN);
-            lv_obj_set_style_text_color(num, lv_color_hex(0xFFB802), 0);
-        } else {
-            lv_obj_set_style_bg_color(bar, lv_color_hex(0x909090), LV_PART_INDICATOR);
-            lv_obj_set_style_bg_grad_color(bar, lv_color_hex(0xf0f0f0), LV_PART_INDICATOR);
-            lv_obj_set_style_bg_color(bar, lv_color_hex(0x202020), LV_PART_MAIN);
-            lv_obj_set_style_text_color(num, lv_color_hex(0xFFFFFF), 0);
-        }
+    if (state.level < 20) {
+        lv_obj_set_style_bg_color(bar, lv_color_hex(0xD3900F), LV_PART_INDICATOR);
+        lv_obj_set_style_bg_grad_color(bar, lv_color_hex(0xE8AC11), LV_PART_INDICATOR);
+        lv_obj_set_style_bg_color(bar, lv_color_hex(0x6E4E07), LV_PART_MAIN);
+        lv_obj_set_style_text_color(num, lv_color_hex(0xFFB802), 0);
+    } else {
+        lv_obj_set_style_bg_color(bar, lv_color_hex(0x909090), LV_PART_INDICATOR);
+        lv_obj_set_style_bg_grad_color(bar, lv_color_hex(0xf0f0f0), LV_PART_INDICATOR);
+        lv_obj_set_style_bg_color(bar, lv_color_hex(0x202020), LV_PART_MAIN);
+        lv_obj_set_style_text_color(num, lv_color_hex(0xFFFFFF), 0);
     }
 }
 
 static void set_battery_bar_connected(lv_obj_t* widget, struct connection_update_state state) {
-    if (initialized) {
-        lv_obj_t* info_container = lv_obj_get_child(widget, state.source);
-        lv_obj_t* bar = lv_obj_get_child(info_container, 0);
-        lv_obj_t* num = lv_obj_get_child(info_container, 1);
-        lv_obj_t* nc_bar = lv_obj_get_child(info_container, 2);
-        lv_obj_t* nc_num = lv_obj_get_child(info_container, 3);
+    lv_obj_t* info_container = lv_obj_get_child(widget, state.source);
+    lv_obj_t* bar = lv_obj_get_child(info_container, 0);
+    lv_obj_t* num = lv_obj_get_child(info_container, 1);
+    lv_obj_t* nc_bar = lv_obj_get_child(info_container, 2);
+    lv_obj_t* nc_num = lv_obj_get_child(info_container, 3);
 
-        LOG_DBG("Peripheral %d %s", state.source,
-                state.connected ? "connected" : "disconnected");
+    LOG_DBG("Peripheral %d %s", state.source,
+            state.connected ? "connected" : "disconnected");
 
-        if (state.connected) {
-            lv_obj_fade_out(nc_bar, 150, 0);
-            lv_obj_fade_out(nc_num, 150, 0);
-            lv_obj_fade_in(bar, 150, 250);
-            lv_obj_fade_in(num, 150, 250);
-        } else {
-            lv_obj_fade_out(bar, 150, 0);
-            lv_obj_fade_out(num, 150, 0);
-            lv_obj_fade_in(nc_bar, 150, 250);
-            lv_obj_fade_in(nc_num, 150, 250);
-        }
+    if (state.connected) {
+        lv_obj_fade_out(nc_bar, 150, 0);
+        lv_obj_fade_out(nc_num, 150, 0);
+        lv_obj_fade_in(bar, 150, 250);
+        lv_obj_fade_in(num, 150, 250);
+    } else {
+        lv_obj_fade_out(bar, 150, 0);
+        lv_obj_fade_out(num, 150, 0);
+        lv_obj_fade_in(nc_bar, 150, 250);
+        lv_obj_fade_in(nc_num, 150, 250);
     }
 }
 
@@ -86,8 +80,7 @@ void battery_bar_battery_update_cb(struct battery_update_state state) {
 }
 
 static struct battery_update_state battery_bar_get_battery_state(const zmk_event_t* eh) {
-    const struct zmk_peripheral_battery_state_changed* bat_ev =
-        as_zmk_peripheral_battery_state_changed(eh);
+    const struct zmk_peripheral_battery_state_changed* bat_ev = as_zmk_peripheral_battery_state_changed(eh);
 
     LOG_DBG("Received battery event: source=%d, level=%d", bat_ev->source, bat_ev->state_of_charge);
 
@@ -108,8 +101,7 @@ void battery_bar_connection_update_cb(struct connection_update_state state) {
 }
 
 static struct connection_update_state battery_bar_get_connection_state(const zmk_event_t* eh) {
-    const struct zmk_split_central_status_changed* conn_ev =
-        as_zmk_split_central_status_changed(eh);
+    const struct zmk_split_central_status_changed* conn_ev = as_zmk_split_central_status_changed(eh);
 
     LOG_DBG("Received connection event: slot=%d, connected=%s", conn_ev->slot, conn_ev->connected ? "true" : "false");
 
@@ -196,7 +188,6 @@ int zmk_widget_battery_bar_init(struct zmk_widget_battery_bar* widget, lv_obj_t*
 
     widget_battery_bar_battery_init();
     widget_battery_bar_connection_init();
-    initialized = true;
 
     return 0;
 }

@@ -223,8 +223,6 @@ int zmk_widget_layer_roller_init(struct zmk_widget_layer_roller* widget, lv_obj_
 
     widget_layer_roller_init();
 
-    initialized = true;
-
     return 0;
 }
 
