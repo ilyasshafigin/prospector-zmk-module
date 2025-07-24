@@ -6,7 +6,7 @@ config PROSPECTOR_ROTATE_DISPLAY_180
     bool "Rotate the display 180 degrees"
     default n
 
-config PROSPECTOR_MODIFIER_STATUS_WIDGET
+config CONFIG_PROSPECTOR_MODIFIERS_WIDGET
     bool "Enable modifier status widget"
     default y
     help
